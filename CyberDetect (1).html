@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CyberDetect</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#071321; --card:#102338; --teal:#39e0c0; --white:#f3f7ff; --muted:#b5c5d6; color-scheme: dark; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--white); font-family: Arial, sans-serif; line-height: 1.6; }
+header { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #26394d; }
+.logo { color: var(--teal); font-size: 23px; font-weight: bold; }
+nav a { color: var(--white); text-decoration: none; margin-left: 12px; font-size: 13px; }
+nav a:hover { color: var(--teal); }
+.hero { text-align: center; padding: 75px 20px; background: radial-gradient(ellipse at top, #12374a, var(--bg) 70%); }
+.tag { color: var(--teal); letter-spacing: 2px; font-size: 12px; font-weight: bold; }
+h1 { font-size: clamp(36px, 8vw, 58px); line-height: 1.15; margin: 22px 0; }
+.hero h2 { font-size: clamp(30px, 7vw, 44px); line-height: 1.2; margin: 10px 0; }
+.highlight { color: var(--teal); }
+p { color: var(--muted); margin: 12px 0; }
+button, .cta { background: var(--teal); color: #071321; border: none; border-radius: 9px; padding: 12px 18px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; margin: 7px 3px; font-size: 1rem; }
+button:hover, .cta:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.secondary { background: transparent; color: var(--teal); border: 1px solid var(--teal); }
+section { padding: 55px 20px; scroll-margin-top: 15px; }
+.section-title { text-align: center; font-size: 30px; margin-bottom: 25px; }
+.card { background: var(--card); border: 1px solid #263e54; border-radius: 16px; padding: 22px; margin: 15px auto; max-width: 750px; box-shadow: 0 10px 30px #00000015; }
+.card h3 { color: var(--teal); margin-bottom: 10px; }
+textarea { width: 100%; min-height: 130px; padding: 14px; border-radius: 10px; border: 1px solid #40566d; background: #071321; color: white; font: inherit; resize: vertical; }
+textarea:focus { outline: 2px solid var(--teal); }
+#result { display: none; margin-top: 20px; padding: 16px; background: #071321; border-radius: 10px; overflow-wrap: anywhere; }
+#result h3 { margin-bottom: 10px; }
+#signals { padding-left: 20px; }
+#signals li { margin: 7px 0; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; max-width: 950px; margin: auto; }
+.grid .card { width: 100%; margin: 0; }
+#quizFeedback { color: var(--teal); margin-top: 15px; }
+#next:disabled { opacity: 0.5; cursor: not-allowed; }
+footer { padding: 30px 20px; text-align: center; border-top: 1px solid #26394d; }
+.small { font-size: 12px; }
+.quiz-option { display: block; width: 100%; margin: 10px 0; padding: 12px 15px; border: 1px solid #2dd4bf; border-radius: 10px; background: #102b3a; color: #ffffff; text-align: left; cursor: pointer; transition: 0.2s ease; font-weight: normal; line-height: 1.5; }
+.quiz-option:hover:not(:disabled) { background: #164e63; transform: translateY(-2px); }
+.quiz-option:disabled { cursor: default; opacity: 0.9; }
+@media (max-width: 480px) {
+  header { padding: 13px 10px; }
+  .logo { font-size: 19px; }
+  nav a { margin-left: 6px; font-size: 11px; }
+  section { padding: 40px 14px; }
+  .section-title { font-size: 26px; }
+  .hero { padding: 60px 14px; }
+  .card { padding: 18px; }
+  button, .cta { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🛡️ CyberDetect</div>
+  <nav><a href="#checker">Analyze</a><a href="#how">How</a><a href="#quiz">Quiz</a><a href="#safety">Safety</a></nav>
+</header>
+
+<main>
+<section class="hero">
+  <div class="tag">CYBER SAFETY AWARENESS</div>
+  <h1>Spot scams <span class="highlight">before</span> they spot you</h1>
+  <p>Paste a suspicious message and see the warning signs in seconds.</p>
+  <a href="#checker" class="cta">Check a message</a>
+  <a href="#quiz" class="cta secondary">Take the quiz</a>
+</section>
+
+<section id="checker">
+  <h2 class="section-title">Message Analyzer</h2>
+  <div class="card">
+    <textarea id="message" maxlength="3000" placeholder="Paste your suspicious message here..."></textarea>
+    <button onclick="analyze()">Analyze Message</button>
+    <button class="secondary" onclick="loadSample()">Try Sample</button>
+    <button class="secondary" onclick="clearMessage()">Clear</button>
+    <div id="result" aria-live="polite">
+      <h3 id="risk"></h3>
+      <p id="summary"></p>
+      <strong>Warning signs found:</strong>
+      <ul id="signals"></ul>
+      <p id="advice"></p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <h2 class="section-title">How It Works</h2>
+  <div class="grid">
+    <div class="card"><h3>01. Enter</h3><p>Enter the message you want to review. Remove private information first.</p></div>
+    <div class="card"><h3>02. Analyze</h3><p>Look for urgency, suspicious links, prize claims, and requests for secret codes.</p></div>
+    <div class="card"><h3>03. Protect</h3><p>Pause and verify important requests using an official channel.</p></div>
+  </div>
+</section>
+
+<section id="quiz">
+  <h2 class="section-title">🎯 Can You Detect the Scam?</h2>
+  <div class="card">
+    <p id="question"></p>
+    <div id="options"></div>
+    <p id="quizFeedback" aria-live="polite"></p>
+    <p id="score"></p>
+    <button id="next" onclick="nextQuestion()" disabled>Next Question →</button>
+  </div>
+</section>
+
+<section id="safety">
+  <h2 class="section-title">Stay Safe Online</h2>
+  <div class="grid">
+    <div class="card"><h3>🔐 Protect your codes</h3><p>Never share your password, PIN, or OTP in response to an unexpected request.</p></div>
+    <div class="card"><h3>🔗 Check links</h3><p>Don’t trust a link just because it uses a familiar logo or name.</p></div>
+    <div class="card"><h3>⏳ Slow down</h3><p>Urgent threats and unexpected prizes are reasons to pause and verify.</p></div>
+    <div class="card"><h3>✅ Verify independently</h3><p>Use the organisation’s official app, website, or trusted contact details.</p></div>
+  </div>
+</section>
+
+<section class="hero">
+  <h2>Stay Alert. <span class="highlight">Stay Safe.</span></h2>
+  <p>Your safest click is an informed click.</p>
+  <a href="#checker" class="cta">Try the Analyzer →</a>
+</section>
+</main>
+
+<footer>
+  <div class="logo">CyberDetect</div>
+  <p>Cyber Safety Awareness Prototype</p>
+  <p class="small">This basic rule-based demo may miss scams or flag legitimate messages. It is not a verified security scanner.</p>
+</footer>
+
+<script>
+const rules = [
+  { pattern: /\b(urgent|immediately|act now|blocked today|final warning)\b/i, name: "Urgent or threatening language", advice: "The message may be pressuring you to act quickly." },
+  { pattern: /\b(otp|one.time password|verification code|password|pin|cvv)\b/i, name: "Sensitive information or security codes", advice: "Never share an OTP, password, PIN, or CVV with someone who contacts you unexpectedly." },
+  { pattern: /(https?:\/\/|www\.|bit\.ly|tinyurl)/i, name: "A link or web address", advice: "Avoid opening unexpected links. Visit the official website independently." },
+  { pattern: /\b(prize|winner|claim your reward|free gift|lottery)\b/i, name: "Unexpected prize or reward", advice: "Unexpected rewards can be used to lure people into scams." },
+  { pattern: /\b(send money|pay now|transfer money|processing fee|gift card)\b/i, name: "Payment-related language", advice: "Verify payment requests through a trusted, separate channel." },
+  { pattern: /\b(bank account|account suspended|account will be blocked|kyc expired)\b/i, name: "Account warning or threat", advice: "Contact the organisation through its official app or contact details." }
+];
+
+function analyze() {
+  const text = document.getElementById("message").value.trim();
+  const result = document.getElementById("result");
+  const signals = document.getElementById("signals");
+  if (!text) { alert("Please enter a message first."); return; }
+
+  const found = rules.filter(rule => rule.pattern.test(text));
+  const riskPoints = found.reduce((total, rule) => total + (rule.name.includes("Sensitive") ? 3 : 2), 0);
+
+  let level, summary;
+  if (riskPoints >= 6) {
+    level = "⚠️ HIGHER CONCERN";
+    summary = "Several warning patterns were found. Treat this message cautiously.";
+  } else if (riskPoints >= 2) {
+    level = "🟠 USE CAUTION";
+    summary = "Some warning patterns were found. Check the context before acting.";
+  } else {
+    level = "🔎 FEW WARNING PATTERNS";
+    summary = "This demo found few listed patterns. That does NOT prove the message is safe.";
+  }
+
+  document.getElementById("risk").textContent = level;
+  document.getElementById("summary").textContent = summary;
+  signals.replaceChildren();
+
+  if (found.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No listed warning patterns were detected.";
+    signals.appendChild(li);
+  } else {
+    found.forEach(rule => {
+      const li = document.createElement("li");
+      li.textContent = rule.name + " — " + rule.advice;
+      signals.appendChild(li);
+    });
+  }
+
+  document.getElementById("advice").textContent =
+    "Safer next step: do not share secret codes or pay based on an unexpected message. Verify independently through an official channel.";
+  result.style.display = "block";
+}
+
+function loadSample() {
+  document.getElementById("message").value =
+    "URGENT! Your bank account will be blocked today. Click this link to verify your OTP and claim your prize.";
+  analyze();
+}
+
+function clearMessage() {
+  document.getElementById("message").value = "";
+  document.getElementById("result").style.display = "none";
+}
+
+const questions = [
+  { q: "1/5: A message asks for your OTP to stop your account from being blocked. What should you do?",
+    options: ["Share the OTP", "Never share it; verify independently", "Click the link"], correct: 1,
+    why: "Correct! Never share an OTP in response to an unexpected request." },
+  { q: "2/5: You win a prize but must pay a fee first. What is safest?",
+    options: ["Pay immediately", "Send your bank details", "Treat it as suspicious and verify"], correct: 2,
+    why: "Unexpected prizes requiring fees can be a scam." },
+  { q: "3/5: A link looks almost like your bank’s website. What should you do?",
+    options: ["Open the official bank app", "Click the link", "Forward it to friends"], correct: 0,
+    why: "Use the official app or type the known website address yourself." },
+  { q: "4/5: Someone unexpectedly asks you to install a remote-access app. What should you do?",
+    options: ["Install it", "Pause and verify through official support", "Give them your phone code"], correct: 1,
+    why: "Unexpected remote access can expose your device and accounts." },
+  { q: "5/5: The checker finds no warning signs. Does that prove a message is safe?",
+    options: ["Yes", "Only if the spelling is correct", "No, verify important requests"], correct: 2,
+    why: "A basic checker cannot detect every scam." }
+];
+
+let questionIndex = 0;
+let points = 0;
+let answered = false;
+
+function showQuestion() {
+  const q = questions[questionIndex];
+  document.getElementById("question").textContent = q.q;
+  document.getElementById("quizFeedback").textContent = "";
+  document.getElementById("score").textContent = "Score: " + points + " / " + questions.length;
+
+  const options = document.getElementById("options");
+  options.replaceChildren();
+  q.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.className = "quiz-option";
+    button.textContent = option;
+    button.onclick = () => chooseAnswer(index);
+    options.appendChild(button);
+  });
+
+  document.getElementById("next").disabled = true;
+  document.getElementById("next").textContent =
+    questionIndex === questions.length - 1 ? "See Results →" : "Next Question →";
+  answered = false;
+}
+
+function chooseAnswer(choice) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[questionIndex];
+  const buttons = document.querySelectorAll(".quiz-option");
+  buttons.forEach((button, index) => {
+    button.disabled = true;
+    if (index === q.correct) button.style.borderColor = "#39e0c0";
+  });
+
+  if (choice === q.correct) {
+    points++;
+    document.getElementById("quizFeedback").textContent = "✓ " + q.why;
+  } else {
+    document.getElementById("quizFeedback").textContent = "Not quite. " + q.why;
+  }
+
+  document.getElementById("score").textContent = "Score: " + points + " / " + questions.length;
+  document.getElementById("next").disabled = false;
+}
+
+function nextQuestion() {
+  if (!answered && !finished) return;
+
+  if (finished) {
+    questionIndex = 0;
+    points = 0;
+    finished = false;
+    showQuestion();
+    return;
+  }
+
+  if (questionIndex < questions.length - 1) {
+    questionIndex++;
+    showQuestion();
+  } else {
+    finished = true;
+    const msg = points === questions.length ? "Cyber Safety Champion! 🛡️"
+      : points >= 3 ? "Great job! Keep learning. 🌟"
+      : "Keep practising—you can become a scam detective! 🔎";
+    document.getElementById("question").textContent =
+      "Challenge complete! You scored " + points + " out of " + questions.length + ". " + msg;
+    document.getElementById("options").replaceChildren();
+    document.getElementById("quizFeedback").textContent = "";
+    document.getElementById("score").textContent = "Final score: " + points + " / " + questions.length;
+    const next = document.getElementById("next");
+    next.textContent = "Play Again ↻";
+    next.disabled = false;
+  }
+}
+
+let finished = false;
+showQuestion();
+</script>
+</body>
+</html>

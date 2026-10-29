@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CyberDetect</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#071321; --card:#102338; --teal:#39e0c0; --white:#f3f7ff; --muted:#b5c5d6; color-scheme: dark; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--white); font-family: Arial, sans-serif; line-height: 1.6; }
+header { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #26394d; }
+.logo { color: var(--teal); font-size: 23px; font-weight: bold; }
+nav a { color: var(--white); text-decoration: none; margin-left: 12px; font-size: 13px; }
+nav a:hover { color: var(--teal); }
+.hero { text-align: center; padding: 75px 20px; background: radial-gradient(ellipse at top, #12374a, var(--bg) 70%); }
+.tag { color: var(--teal); letter-spacing: 2px; font-size: 12px; font-weight: bold; }
+h1 { font-size: clamp(36px, 8vw, 58px); line-height: 1.15; margin: 22px 0; }
+.highlight { color: var(--teal); }
+p { color: var(--muted); margin: 12px 0; }
+button, .cta { background: var(--teal); color: #071321; border: none; border-radius: 9px; padding: 12px 18px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; margin: 7px 3px; font-size: 1rem; }
+button:hover, .cta:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.secondary { background: transparent; color: var(--teal); border: 1px solid var(--teal); }
+section { padding: 55px 20px; scroll-margin-top: 15px; }
+.section-title { text-align: center; font-size: 30px; margin-bottom: 25px; }
+.card { background: var(--card); border: 1px solid #263e54; border-radius: 16px; padding: 22px; margin: 15px auto; max-width: 750px; box-shadow: 0 10px 30px #00000015; }
+.card h3 { color: var(--teal); margin-bottom: 10px; }
+textarea { width: 100%; min-height: 130px; padding: 14px; border-radius: 10px; border: 1px solid #40566d; background: #071321; color: white; font: inherit; resize: vertical; }
+textarea:focus { outline: 2px solid var(--teal); }
+#result { display: none; margin-top: 20px; padding: 16px; background: #071321; border-radius: 10px; overflow-wrap: anywhere; }
+#result h3 { margin-bottom: 10px; }
+#signals { padding-left: 20px; }
+#signals li { margin: 7px 0; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; max-width: 950px; margin: auto; }
+.grid .card { width: 100%; margin: 0; }
+#quizFeedback { color: var(--teal); margin-top: 15px; }
+#next:disabled { opacity: 0.5; cursor: not-allowed; }
+footer { padding: 30px 20px; text-align: center; border-top: 1px solid #26394d; }
+.small { font-size: 12px; }
+@media (max-width: 480px) {
+  header { padding: 13px 10px; }
+  .logo { font-size: 19px; }
+  nav a { margin-left: 6px; font-size: 11px; }
+  section { padding: 40px 14px; }
+  .section-title { font-size: 26px; }
+  .hero { padding: 60px 14px; }
+  .card { padding: 18px; }
+  button, .cta { max-width: 100%; }
+}
+/* Mini quiz styling */
+.quiz-option { display: block; width: 100%; margin: 10px 0; padding: 12px 15px; border: 1px solid #2dd4bf; border-radius: 10px; background: #102b3a; color: #ffffff; text-align: left; cursor: pointer; transition: 0.2s ease; font-weight: normal; line-height: 1.5; }
+.quiz-option:hover:not(:disabled) { background: #164e63; transform: translateY(-2px); }
+.quiz-option:disabled { cursor: default; opacity: 0.9; }
+.quiz-option.correct { background: #14532d; border-color: #4ade80; }
+.quiz-option.wrong { background: #7f1d1d; border-color: #f87171; }
+#quizResult { margin-top: 12px; line-height: 1.6; color: var(--white); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🛡️ CyberDetect</div>
+  <nav><a href="#detect">Detect</a><a href="#learn">Learn</a><a href="#quiz">Quiz</a></nav>
+</header>
+
+<div class="hero">
+  <div class="tag">AI-POWERED SCAM DETECTION</div>
+  <h1>Spot scams <span class="highlight">before</span> they spot you</h1>
+  <p>Paste any suspicious message and see the warning signs in seconds.</p>
+  <a class="cta" href="#detect">Check a message</a>
+  <a class="cta secondary" href="#quiz">Take the quiz</a>
+</div>
+
+<section id="detect">
+  <h2 class="section-title">Scam Message Checker</h2>
+  <div class="card">
+    <textarea id="message" placeholder="Paste a suspicious SMS, email or WhatsApp message here…"></textarea>
+    <button id="analyze">Analyze message</button>
+    <div id="result">
+      <h3 id="verdict"></h3>
+      <ul id="signals"></ul>
+    </div>
+  </div>
+</section>
+
+<section id="learn">
+  <h2 class="section-title">Common Red Flags</h2>
+  <div class="grid">
+    <div class="card"><h3>Fake urgency</h3><p>“Act now or your account will be blocked.” Scammers rush you so you can’t think.</p></div>
+    <div class="card"><h3>Suspicious links</h3><p>Shortened or look-alike links that imitate your bank or a courier service.</p></div>
+    <div class="card"><h3>Requests for secrets</h3><p>No genuine company asks for your OTP, PIN, CVV or password.</p></div>
+  </div>
+</section>
+
+<section id="quiz">
+  <h2 class="section-title">Mini Quiz</h2>
+  <div class="card">
+    <h3 id="quizQuestion"></h3>
+    <div id="quizOptions"></div>
+    <div id="quizFeedback"></div>
+    <button id="next" disabled>Next</button>
+    <div id="quizResult"></div>
+  </div>
+</section>
+
+<footer>
+  <p class="small">CyberDetect is an educational tool. When in doubt, contact the company through its official app or website.</p>
+</footer>
+
+<script>
+(function () {
+  // ---------- Scam checker ----------
+  var rules = [
+    { re: /urgent|immediately|act now|within \d+ ?(hours?|mins?|minutes?)|last chance|expires? (today|soon)|blocked|suspended/i, pts: 2, msg: "Creates urgency or threatens account closure." },
+    { re: /otp|pin\b|cvv|password|passcode|card number|aadhaar|pan\b/i, pts: 3, msg: "Asks for sensitive details such as an OTP, PIN or password." },
+    { re: /https?:\/\/|www\./i, pts: 1, msg: "Contains a link. Check where it really leads before tapping." },
+    { re: /bit\.ly|tinyurl|t\.co\/|cutt\.ly|goo\.gl|rb\.gy|\.xyz|\.top|\.click/i, pts: 2, msg: "Uses a shortened or unusual link." },
+    { re: /won|winner|lottery|prize|reward|cashback|gift ?card|free/i, pts: 2, msg: "Promises a prize, reward or something free." },
+    { re: /kyc|verify|update your (account|details|bank)|confirm your (account|identity)/i, pts: 2, msg: "Asks you to verify or update account details." },
+    { re: /processing fee|registration fee|pay .* to (receive|claim)|send money|transfer/i, pts: 2, msg: "Asks for a payment or fee to receive something." },
+    { re: /dear (customer|user|sir|madam)/i, pts: 1, msg: "Uses a generic greeting instead of your name." },
+    { re: /[A-Z]{6,}/, pts: 1, msg: "Uses lots of capital letters to grab attention." }
+  ];
+
+  document.getElementById("analyze").onclick = function () {
+    var text = document.getElementById("message").value.trim();
+    var box = document.getElementById("result");
+    var verdict = document.getElementById("verdict");
+    var list = document.getElementById("signals");
+    list.innerHTML = "";
+    if (!text) {
+      verdict.textContent = "Please paste a message first.";
+      box.style.display = "block";
+      return;
+    }
+    var score = 0;
+    rules.forEach(function (r) {
+      if (r.re.test(text)) {
+        score += r.pts;
+        var li = document.createElement("li");
+        li.textContent = r.msg;
+        list.appendChild(li);
+      }
+    });
+    if (score >= 6) verdict.textContent = "🚨 High risk: very likely a scam";
+    else if (score >= 3) verdict.textContent = "⚠️ Suspicious: be careful";
+    else verdict.textContent = "✅ Low risk: no strong warning signs found";
+    if (!list.children.length) {
+      var none = document.createElement("li");
+      none.textContent = "No common scam patterns detected. Still verify the sender if money or data is involved.";
+      list.appendChild(none);
+    }
+    box.style.display = "block";
+  };
+
+  // ---------- Mini quiz ----------
+  var quizQuestions = [
+    { q: "A text says your bank account is locked and asks you to tap a link to verify. What do you do?",
+      options: ["Tap the link quickly", "Ignore it and contact your bank via its official app or number", "Reply with your card number"],
+      answer: 1, why: "Banks don’t ask you to verify details through links in texts." },
+    { q: "A caller asks for the OTP you just received. What do you do?",
+      options: ["Share it, they sound official", "Share half of it", "Never share it and hang up"],
+      answer: 2, why: "An OTP is a secret. No genuine agent will ever ask for it." },
+    { q: "You get a message saying you won a lottery you never entered. It’s most likely…",
+      options: ["A scam", "A lucky break", "A bank error"],
+      answer: 0, why: "Unexpected prizes that ask for fees or details are classic scams." }
+  ];
+  var current = 0, score = 0;
+  var qEl = document.getElementById("quizQuestion");
+  var optsEl = document.getElementById("quizOptions");
+  var fbEl = document.getElementById("quizFeedback");
+  var nextBtn = document.getElementById("next");
+  var resEl = document.getElementById("quizResult");
+
+  function showQuestion() {
+    var item = quizQuestions[current];
+    qEl.textContent = (current + 1) + "/" + quizQuestions.length + ". " + item.q;
+    optsEl.innerHTML = "";
+    fbEl.textContent = "";
+    resEl.textContent = "";
+    nextBtn.disabled = true;
+    nextBtn.textContent = current === quizQuestions.length - 1 ? "See result" : "Next";
+    item.options.forEach(function (text, i) {
+      var b = document.createElement("button");
+      b.className = "quiz-option";
+      b.textContent = text;
+      b.onclick = function () { choose(i); };
+      optsEl.appendChild(b);
+    });
+  }
+
+  function choose(i) {
+    var item = quizQuestions[current];
+    var btns = optsEl.querySelectorAll(".quiz-option");
+    btns.forEach(function (b, idx) {
+      b.disabled = true;
+      if (idx === item.answer) b.classList.add("correct");
+    });
+    if (i === item.answer) { score++; fbEl.textContent = "Correct! " + item.why; }
+    else { btns[i].classList.add("wrong"); fbEl.textContent = "Not quite. " + item.why; }
+    nextBtn.disabled = false;
+  }
+
+  function handleNext() {
+    current++;
+    if (current < quizQuestions.length) { showQuestion(); return; }
+    qEl.textContent = "Quiz complete!";
+    optsEl.innerHTML = "";
+    fbEl.textContent = "";
+    resEl.textContent = "You scored " + score + "/" + quizQuestions.length + "! " +
+      (score === 3 ? "Cyber Safety Champion! 🛡️" :
+       score === 2 ? "Great job! Keep learning. 🌟" :
+       "Keep practising—you can become a scam detective! 🔎");
+    nextBtn.textContent = "Play Again ↻";
+    nextBtn.disabled = false;
+    nextBtn.onclick = function () {
+      current = 0; score = 0;
+      nextBtn.onclick = handleNext;
+      showQuestion();
+    };
+  }
+  nextBtn.onclick = handleNext;
+
+  showQuestion();
+})();
+</script>
+</body>
+</html>

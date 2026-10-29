@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cyber Safety Quiz</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--text:#14213d;--muted:#5b667a;--accent:#2563eb;--ok:#16a34a;--bad:#dc2626;--border:#d8dee9;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--accent:#60a5fa;--ok:#4ade80;--bad:#f87171;--border:#334155;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--accent:#60a5fa;--ok:#4ade80;--bad:#f87171;--border:#334155;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:100%;max-width:480px}
+h1{font-size:1.2rem;margin:0 0 4px}
+.progress{color:var(--muted);font-size:.85rem;margin-bottom:14px}
+#question{font-size:1.05rem;margin:0 0 14px;line-height:1.4}
+.opt{display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:1rem;cursor:pointer}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,transparent)}
+#feedback{min-height:1.4em;color:var(--muted);font-size:.9rem;margin:4px 0 12px}
+#nextBtn{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:1rem;font-weight:600;cursor:pointer}
+#nextBtn[hidden]{display:none}
+#result{font-size:1.1rem;line-height:1.5;margin:0 0 16px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🛡️ Cyber Safety Quiz</h1>
+  <div class="progress" id="progress"></div>
+  <p id="question"></p>
+  <div id="options"></div>
+  <div id="feedback"></div>
+  <p id="result" hidden></p>
+  <button id="nextBtn" hidden>Next →</button>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const quizQuestions = [
+    { q: "A text says your bank account is locked and asks you to tap a link to verify. What do you do?",
+      options: ["Tap the link quickly", "Ignore it and contact your bank through its official app or number", "Reply with your card number"],
+      answer: 1, why: "Banks don’t ask you to verify details through links in texts." },
+    { q: "Someone on a call asks for the OTP you just received. What should you do?",
+      options: ["Share it, they sound official", "Share half of it", "Never share it and hang up"],
+      answer: 2, why: "An OTP is a secret. No genuine agent will ever ask for it." },
+    { q: "You get a message saying you won a lottery you never entered. It’s most likely…",
+      options: ["A scam", "A lucky break", "A bank error"],
+      answer: 0, why: "Unexpected prizes that ask for fees or details are classic scams." }
+  ];
+
+  const progressEl = document.getElementById("progress");
+  const questionEl = document.getElementById("question");
+  const optionsEl = document.getElementById("options");
+  const feedbackEl = document.getElementById("feedback");
+  const resultEl = document.getElementById("result");
+  const nextBtn = document.getElementById("nextBtn");
+
+  let currentQuestion = 0;
+  let score = 0;
+
+  function showQuestion() {
+    const item = quizQuestions[currentQuestion];
+    resultEl.hidden = true;
+    questionEl.hidden = false;
+    optionsEl.hidden = false;
+    feedbackEl.textContent = "";
+    nextBtn.hidden = true;
+    nextBtn.textContent = currentQuestion === quizQuestions.length - 1 ? "See result" : "Next →";
+    nextBtn.onclick = nextStep;
+    progressEl.textContent = "Question " + (currentQuestion + 1) + " of " + quizQuestions.length;
+    questionEl.textContent = item.q;
+    optionsEl.innerHTML = "";
+    item.options.forEach(function (text, i) {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = text;
+      btn.onclick = function () { choose(i); };
+      optionsEl.appendChild(btn);
+    });
+  }
+
+  function choose(i) {
+    const item = quizQuestions[currentQuestion];
+    const buttons = optionsEl.querySelectorAll(".opt");
+    buttons.forEach(function (b, idx) {
+      b.disabled = true;
+      if (idx === item.answer) b.classList.add("correct");
+    });
+    if (i === item.answer) {
+      score++;
+      feedbackEl.textContent = "Correct! " + item.why;
+    } else {
+      buttons[i].classList.add("wrong");
+      feedbackEl.textContent = "Not quite. " + item.why;
+    }
+    nextBtn.hidden = false;
+  }
+
+  function nextStep() {
+    currentQuestion++;
+    if (currentQuestion < quizQuestions.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    questionEl.hidden = true;
+    optionsEl.hidden = true;
+    feedbackEl.textContent = "";
+    progressEl.textContent = "Quiz complete";
+    resultEl.hidden = false;
+    resultEl.textContent = `You scored ${score}/${quizQuestions.length}! ${
+      score === 3
+        ? "Cyber Safety Champion! 🛡️"
+        : score === 2
+        ? "Great job! Keep learning. 🌟"
+        : "Keep practising—you can become a scam detective! 🔎"
+    }`;
+    nextBtn.textContent = "Play Again ↻";
+    nextBtn.hidden = false;
+    nextBtn.onclick = function () {
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    };
+  }
+
+  showQuestion();
+});
+</script>
+</body>
+</html>
